@@ -1,0 +1,8 @@
+sdkconfig
+sdkconfig.old
+sdkconfig.defaults
+build
+.cache
+managed_components/*
+secrets.h
+
