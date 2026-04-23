@@ -14,6 +14,7 @@
 #include "soc/gpio_num.h"
 #include <esp_wifi.h>
 #include <stdio.h>
+#include <string.h>
 #define TAG "simple_connect_example"
 #include "protocol_examples_common.h"
 
@@ -31,7 +32,12 @@ static void publish_counter(void) {
   ESP_LOGI(TAG, "Published counter=%d, msg_id=%d", counter, msg_id);
   counter++;
 }
+static void blink_led() {
 
+  int level = gpio_get_level(GPIO_NUM_9);
+  ESP_LOGI(MQTT_TAG, "SHOULD BLINK LED");
+  gpio_set_level(GPIO_NUM_9, !level);
+}
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
                                int32_t event_id, void *event_data) {
   esp_mqtt_event_handle_t event = event_data;
@@ -59,6 +65,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
     ESP_LOGI(MQTT_TAG, "MQTT_EVENT_DATA");
     printf("Topic: %.*s\n", event->topic_len, event->topic);
     printf("Data: %.*s\n", event->data_len, event->data);
+
+    if (strncmp(event->topic, "date", event->topic_len) == 0) {
+      // xTaskCreate(blink_led, "blink_led", 2048, NULL, 5, NULL);
+      blink_led();
+    }
     break;
 
   case MQTT_EVENT_ERROR:
@@ -84,6 +95,7 @@ static void publish_boom(void) {
   ESP_LOGI(TAG, "Published counter=%d, msg_id=%d", counter, msg_id);
   counter++;
 }
+
 static void on_button_press(void *args) {
   uint8_t last_level = 1;
 
@@ -107,6 +119,11 @@ void init_button() {
   gpio_set_pull_mode(BUTTON_GPIO, GPIO_PULLUP_ONLY);
 
   xTaskCreate(on_button_press, "button_task", 2048, NULL, 5, NULL);
+}
+
+void init_LED() {
+  gpio_set_direction(GPIO_NUM_9, GPIO_MODE_INPUT_OUTPUT);
+  gpio_set_level(GPIO_NUM_9, 0);
 }
 
 void app_main(void) {
@@ -137,5 +154,7 @@ void app_main(void) {
   // ESP_ERROR_CHECK(
   //     esp_timer_start_periodic(periodic_timer, 5000000)); // 5 seconds
   //
+  //
+  init_LED();
   init_button();
 }
