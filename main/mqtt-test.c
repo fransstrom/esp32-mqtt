@@ -38,6 +38,7 @@ static void blink_led() {
   ESP_LOGI(MQTT_TAG, "SHOULD BLINK LED");
   gpio_set_level(GPIO_NUM_9, !level);
 }
+
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
                                int32_t event_id, void *event_data) {
   esp_mqtt_event_handle_t event = event_data;
@@ -142,6 +143,7 @@ void app_main(void) {
       .broker.address.transport = MQTT_TRANSPORT_OVER_TCP};
 
   mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
+
   esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID,
                                  mqtt_event_handler, NULL);
   esp_mqtt_client_start(mqtt_client);
