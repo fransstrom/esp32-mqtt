@@ -6,6 +6,7 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "hal/gpio_types.h"
 #include "mqtt_client.h"
 #include "nvs_flash.h"
@@ -21,8 +22,14 @@
 static const char *MQTT_TAG = "MQTT_TEST";
 static int counter = 0;
 static esp_mqtt_client_handle_t mqtt_client;
+static SemaphoreHandle_t led_semaphore;
 
 #define BUTTON_GPIO GPIO_NUM_10
+
+#define BLINK_COUNT 3
+#define BLINK_DELAY_MS 200
+#define LED_TASK_STACK 2048
+#define LED_TASK_PRIO 5
 
 static void publish_counter(void) {
   char payload[32];
@@ -32,11 +39,18 @@ static void publish_counter(void) {
   ESP_LOGI(TAG, "Published counter=%d, msg_id=%d", counter, msg_id);
   counter++;
 }
-static void blink_led() {
+static void led_task(void *arg) {
+  while (1) {
+    xSemaphoreTake(led_semaphore, portMAX_DELAY);
+    ESP_LOGI(MQTT_TAG, "Blinking LED %d times", BLINK_COUNT);
 
-  int level = gpio_get_level(GPIO_NUM_9);
-  ESP_LOGI(MQTT_TAG, "SHOULD BLINK LED");
-  gpio_set_level(GPIO_NUM_9, !level);
+    for (int i = 0; i < BLINK_COUNT; i++) {
+      gpio_set_level(GPIO_NUM_9, 1);
+      vTaskDelay(pdMS_TO_TICKS(BLINK_DELAY_MS));
+      gpio_set_level(GPIO_NUM_9, 0);
+      vTaskDelay(pdMS_TO_TICKS(BLINK_DELAY_MS));
+    }
+  }
 }
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
@@ -68,8 +82,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
     printf("Data: %.*s\n", event->data_len, event->data);
 
     if (strncmp(event->topic, "date", event->topic_len) == 0) {
-      // xTaskCreate(blink_led, "blink_led", 2048, NULL, 5, NULL);
-      blink_led();
+      xSemaphoreGive(led_semaphore);
     }
     break;
 
@@ -157,6 +170,15 @@ void app_main(void) {
   //     esp_timer_start_periodic(periodic_timer, 5000000)); // 5 seconds
   //
   //
+
   init_LED();
+
+  led_semaphore = xSemaphoreCreateCounting(10, 0);
+  if (led_semaphore == NULL) {
+    ESP_LOGE(MQTT_TAG, "Failed to create LED semaphore");
+    return;
+  }
+  xTaskCreate(led_task, "led_task", LED_TASK_STACK, NULL, LED_TASK_PRIO, NULL);
+
   init_button();
 }
