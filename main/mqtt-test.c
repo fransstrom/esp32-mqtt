@@ -5,8 +5,8 @@
 #include "esp_timer.h"
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "freertos/task.h"
 #include "hal/gpio_types.h"
 #include "mqtt_client.h"
 #include "nvs_flash.h"
@@ -105,7 +105,8 @@ static void publish_boom(void) {
   char payload[255];
   snprintf(payload, sizeof(payload), "%s",
            "panic button pressed from my esp32c3 SUPERMINI");
-  int msg_id = esp_mqtt_client_publish(mqtt_client, "boom", payload, 0, 1, 0);
+  int msg_id =
+      esp_mqtt_client_publish(mqtt_client, "boom/ESP", payload, 0, 1, 0);
   ESP_LOGI(TAG, "Published counter=%d, msg_id=%d", counter, msg_id);
   counter++;
 }
