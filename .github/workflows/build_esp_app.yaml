@@ -31,7 +31,7 @@ jobs:
           path: |
             build/bootloader/bootloader.bin
             build/partition_table/partition-table.bin
-            build/example_test_app.bin
-            build/example_test_app.elf
+            build/mqtt-test.bin
+            build/mqtt-test.elf
             build/flasher_args.json
           if-no-files-found: error
