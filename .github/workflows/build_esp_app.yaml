@@ -23,7 +23,7 @@ jobs:
         with:
           esp_idf_version: "latest" # trying latest pin to a known published image tag; see hub.docker.com/r/espressif/idf/tags
           target: ${{ matrix.espidf_target }}
-          path: 'test_app'
+          path: '.'
       - name: Upload files to artifacts for run-target job
         uses: actions/upload-artifact@v4
         with:
