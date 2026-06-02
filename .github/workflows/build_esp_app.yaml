@@ -21,7 +21,7 @@ jobs:
       - name: Build Test Application with ESP-IDF
         uses: espressif/esp-idf-ci-action@v1
         with:
-          esp_idf_version: "v5.5.2" # pin to a known published image tag; see hub.docker.com/r/espressif/idf/tags
+          esp_idf_version: "latest" # trying latest pin to a known published image tag; see hub.docker.com/r/espressif/idf/tags
           target: ${{ matrix.espidf_target }}
           path: 'test_app'
       - name: Upload files to artifacts for run-target job
