@@ -29,9 +29,9 @@ jobs:
         with:
           name: test_app_bin_${{ matrix.espidf_target }}
           path: |
-            test_app/build/bootloader/bootloader.bin
-            test_app/build/partition_table/partition-table.bin
-            test_app/build/example_test_app.bin
-            test_app/build/example_test_app.elf
-            test_app/build/flasher_args.json
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/example_test_app.bin
+            build/example_test_app.elf
+            build/flasher_args.json
           if-no-files-found: error
